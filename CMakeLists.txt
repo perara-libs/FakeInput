@@ -5,11 +5,9 @@ project(FakeInput)
 set(VERSION 1)
 set(SUBVERSION 0)
 
-find_package(Qt4)
-find_package(Doxygen)
-find_package(PkgConfig REQUIRED)
 
 if(${UNIX})
+    find_package(PkgConfig REQUIRED)
     pkg_check_modules(X11 REQUIRED x11)
     pkg_check_modules(XTest REQUIRED xtst)
 endif(${UNIX})
@@ -18,6 +16,7 @@ option(TEST_APP "Build testing applications (Requires Qt)" off)
 option(DOC "Generate API documentation (Requires Doxygen)" off)
 
 if(${TEST_APP})
+    find_package(Qt4)
     if(NOT ${QT_FOUND})
         set(TEST_APP off)
         set(TEST_APP_MESSAGE ": MISSING DEPENDENCY (intall Qt4 library)")
@@ -25,6 +24,7 @@ if(${TEST_APP})
 endif(${TEST_APP})
 
 if(${DOC})
+    find_package(Doxygen)
     if(NOT ${DOXYGEN_FOUND})
         set(DOC off)
         set(DOC_MESSAGE ": MISSING DEPENDENCY (intall Doxygen)")
@@ -32,7 +32,10 @@ if(${DOC})
 endif(${DOC})
 
 include(${CMAKE_HOME_DIRECTORY}/config/cmake/CMakeMacros.txt) # include macros defined for this project
-include(${QT_USE_FILE})
+
+if(${TEST_APP})
+    include(${QT_USE_FILE})
+endif(${TEST_APP})
 
 include_directories(${CMAKE_HOME_DIRECTORY}/src)
 link_directories(${CMAKE_HOME_DIRECTORY}/bin/lib)
@@ -78,8 +81,11 @@ install_directory(${INSTALL_PREFIX}/${INSTALL_HEADER_DIR})
 install_directory(${INSTALL_PREFIX}/${INSTALL_HEADER_DIR}/fakeinput)
 
 add_subdirectory(src)
-set(QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY})
-add_subdirectory(test)
+
+if(${TEST_APP})
+    set(QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY})
+    add_subdirectory(test)
+endif(${TEST_APP})
 
 if(${UNIX})
     install_pkg_config_file(${CMAKE_HOME_DIRECTORY}/fakeinput.pc.in)
