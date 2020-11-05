@@ -22,43 +22,59 @@
  * THE SOFTWARE.
  */
 
-#ifndef FI_KEY_BASE_HPP
-#define FI_KEY_BASE_HPP
+#ifndef FI_MOUSE_HPP
+#define FI_MOUSE_HPP
 
-#include "config.hpp"
 
-#include <string>
+#include "types.hpp"
 
 namespace FakeInput
 {
-    /** Represents real keyboard button.
+    /** Represents mouse device.
+     *
+     * Allows you to move the cursor to the required position.
+     * Or simulate mouse button press.
      */
-    class Key_base
+    class Mouse
     {
     public:
-        /** Gives the hardware code of the key.
+        /** Moves mouse cursor in direction.
          *
-         * @returns
-         *     Device dependend code of the key.
+         * @param xDirection
+         *     Direction in pixels on X-axis.
+         * @param yDirection
+         *     Direction in pixels on Y-axis.
          */
-        virtual unsigned int code() const;
+        static void move(int xDirection, int yDirection);
 
-        /** Gives the name of the key.
+        /** Moves mouse cursor to the specified position.
          *
-         * @returns
-         *     The name of the key.
+         * @param x
+         *     X coordinate of the position.
+         * @param y
+         *     Y coordinate of the position.
          */
-        virtual const std::string& name() const;
+        static void moveTo(int x, int y);
 
-    protected:
-        /** Key_base constructor.
+        /** Simulates mouse button press.
          *
-         * Creates key representing no real key.
+         * @param button
+         *     MouseButton to be pressed
          */
-        Key_base();
+        static void pressButton(MouseButton button);
 
-        unsigned int code_;
-        std::string name_;
+        /** Simulates mouse button release.
+         *
+         * @param button
+         *     MouseButton to be released
+         */
+        static void releaseButton(MouseButton button);
+
+        /** Simulates wheel up move */
+        static void wheelUp();
+
+        /** Simulates wheel up down */
+        static void wheelDown();
     };
 }
 

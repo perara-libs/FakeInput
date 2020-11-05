@@ -22,59 +22,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef FI_MOUSE_HPP
-#define FI_MOUSE_HPP
+#ifndef FI_KEY_BASE_HPP
+#define FI_KEY_BASE_HPP
 
-#include "config.hpp"
-#include "types.hpp"
+
+
+#include <string>
 
 namespace FakeInput
 {
-    /** Represents mouse device.
-     *
-     * Allows you to move the cursor to the required position.
-     * Or simulate mouse button press.
+    /** Represents real keyboard button.
      */
-    class Mouse
+    class Key_base
     {
     public:
-        /** Moves mouse cursor in direction.
+        /** Gives the hardware code of the key.
          *
-         * @param xDirection
-         *     Direction in pixels on X-axis.
-         * @param yDirection
-         *     Direction in pixels on Y-axis.
+         * @returns
+         *     Device dependend code of the key.
          */
-        static void move(int xDirection, int yDirection);
+        virtual unsigned int code() const;
 
-        /** Moves mouse cursor to the specified position.
+        /** Gives the name of the key.
          *
-         * @param x
-         *     X coordinate of the position.
-         * @param y
-         *     Y coordinate of the position.
+         * @returns
+         *     The name of the key.
          */
-        static void moveTo(int x, int y);
+        virtual const std::string& name() const;
 
-        /** Simulates mouse button press.
+    protected:
+        /** Key_base constructor.
          *
-         * @param button
-         *     MouseButton to be pressed
+         * Creates key representing no real key.
          */
-        static void pressButton(MouseButton button);
+        Key_base();
 
-        /** Simulates mouse button release.
-         *
-         * @param button
-         *     MouseButton to be released
-         */
-        static void releaseButton(MouseButton button);
-
-        /** Simulates wheel up move */
-        static void wheelUp();
-
-        /** Simulates wheel up down */
-        static void wheelDown();
+        unsigned int code_;
+        std::string name_;
     };
 }
 

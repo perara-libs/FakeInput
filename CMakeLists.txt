@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-
-project(FakeInput)
+set(libFakeInput)
+project(libFakeInput)
 
 set(VERSION 1)
 set(SUBVERSION 0)
@@ -12,94 +12,134 @@ if(${UNIX})
     pkg_check_modules(XTest REQUIRED xtst)
 endif(${UNIX})
 
-option(TEST_APP "Build testing applications (Requires Qt)" off)
-option(DOC "Generate API documentation (Requires Doxygen)" off)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/FakeInput)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/FakeInput/actions)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/bin/lib)
 
-if(${TEST_APP})
-    find_package(Qt4)
-    if(NOT ${QT_FOUND})
-        set(TEST_APP off)
-        set(TEST_APP_MESSAGE ": MISSING DEPENDENCY (intall Qt4 library)")
-    endif(NOT ${QT_FOUND})
-endif(${TEST_APP})
 
-if(${DOC})
-    find_package(Doxygen)
-    if(NOT ${DOXYGEN_FOUND})
-        set(DOC off)
-        set(DOC_MESSAGE ": MISSING DEPENDENCY (intall Doxygen)")
-    endif(NOT ${DOXYGEN_FOUND})
-endif(${DOC})
 
-include(${CMAKE_HOME_DIRECTORY}/config/cmake/CMakeMacros.txt) # include macros defined for this project
 
-if(${TEST_APP})
-    include(${QT_USE_FILE})
-endif(${TEST_APP})
+# headers
+set(HDRS_COMMON
+        include/FakeInput/key.hpp
+        include/FakeInput/key_base.hpp
+        include/FakeInput/keyboard.hpp
+        include/FakeInput/mapper.hpp
+        include/FakeInput/mouse.hpp
+        include/FakeInput/system.hpp
+        include/FakeInput/types.hpp
+        include/FakeInput/actions/actions.hpp
+        include/FakeInput/actions/action.hpp
+        include/FakeInput/actions/actionsequence.hpp
+        include/FakeInput/actions/commandaction.hpp
+        include/FakeInput/actions/keyaction.hpp
+        include/FakeInput/actions/mouseaction.hpp
+        include/FakeInput/actions/waitaction.hpp
+        )
 
-include_directories(${CMAKE_HOME_DIRECTORY}/src)
-link_directories(${CMAKE_HOME_DIRECTORY}/bin/lib)
+set(HDRS_UNIX
+        include/FakeInput/display_unix.hpp
+        include/FakeInput/key_unix.hpp
+        )
 
-if(${DOC} AND (EXISTS ${CMAKE_HOME_DIRECTORY}/Doxyfile.in))
-    file(MAKE_DIRECTORY ${CMAKE_HOME_DIRECTORY}/doc/doxygen)
-    configure_file(
-        ${CMAKE_HOME_DIRECTORY}/Doxyfile.in
-        ${CMAKE_BINARY_DIR}/Doxyfile
-        @ONLY
-    )
-    add_custom_target(doc ALL
-            ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
-            WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}
-            COMMENT "Generating API documentation with Doxygen"
-    )
-elseif(${DOC} AND (EXISTS ${CMAKE_HOME_DIRECTORY}/Doxyfile.in))
-    message(WARNING "Doxyfile.in doesn't exists - doxygen documentation won't be generated")
-endif(${DOC} AND (EXISTS ${CMAKE_HOME_DIRECTORY}/Doxyfile.in))
+set(HDRS_WIN
+        include/FakeInput/key_win.hpp
+        )
 
-configure_file(
-    ${CMAKE_HOME_DIRECTORY}/src/config.hpp.cmake
-    ${PROJECT_BINARY_DIR}/src/config.hpp
-)
+# sources
+set(SRCS_COMMON
+        src/key_base.cpp
+        src/keyboard.cpp
+        src/actions/actionsequence.cpp
+        src/actions/commandaction.cpp
+        src/actions/keyaction.cpp
+        src/actions/mouseaction.cpp
+        src/actions/waitaction.cpp
+        )
 
-include_directories(${PROJECT_BINARY_DIR}/src)
+set(SRCS_UNIX
+        src/display_unix.cpp
+        src/mouse_unix.cpp
+        src/mapper_unix.cpp
+        src/system_unix.cpp
+        src/keyboard_unix.cpp
+        src/key_unix.cpp
+        )
 
-if("${INSTALL_PREFIX}" STREQUAL "")
-    set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-endif("${INSTALL_PREFIX}" STREQUAL "")
-
-if(NOT "${INSTALL_LIBRARY_DIR}")
-    set(INSTALL_LIBRARY_DIR "lib")
-endif(NOT "${INSTALL_LIBRARY_DIR}")
-
-if(NOT "${INSTALL_HEADER_DIR}")
-    set(INSTALL_HEADER_DIR "include")
-endif(NOT "${INSTALL_HEADER_DIR}")
-
-install_directory(${INSTALL_PREFIX})
-install_directory(${INSTALL_PREFIX}/${INSTALL_LIBRARY_DIR})
-install_directory(${INSTALL_PREFIX}/${INSTALL_HEADER_DIR})
-install_directory(${INSTALL_PREFIX}/${INSTALL_HEADER_DIR}/fakeinput)
-
-add_subdirectory(src)
-
-if(${TEST_APP})
-    set(QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY})
-    add_subdirectory(test)
-endif(${TEST_APP})
+set(SRCS_WIN
+        src/mouse_win.cpp
+        src/mapper_win.cpp
+        src/system_win.cpp
+        src/keyboard_win.cpp
+        src/key_win.cpp
+        )
 
 if(${UNIX})
-    install_pkg_config_file(${CMAKE_HOME_DIRECTORY}/fakeinput.pc.in)
+    set(HDRS
+            ${HDRS_COMMON}
+            ${HDRS_UNIX}
+            )
+
+    set(SRCS
+            ${SRCS_COMMON}
+            ${SRCS_UNIX}
+            )
+
+    set(LIBS
+            ${X11_LIBRARIES}
+            ${XTest_LIBRARIES}
+            )
 endif(${UNIX})
 
 if(${WIN32})
-    install_to_win_path(${INSTALL_PREFIX}/${INSTALL_LIBRARY_DIR})
+    set(HDRS
+            ${HDRS_COMMON}
+            ${HDRS_WIN}
+            )
+
+    set(SRCS
+            ${SRCS_COMMON}
+            ${SRCS_WIN}
+            )
 endif(${WIN32})
 
-add_uninstall_target(${CMAKE_HOME_DIRECTORY}/config/cmake)
 
-message(STATUS "")
-message(STATUS "OPTIONS: (to change it: -D<option>=<ON|OFF>)")
-message(STATUS "")
-message(STATUS "Build testing applications (TEST_APP) ... ${TEST_APP}${TEST_APP_MESSAGE}")
-message(STATUS "Generate API documentation (DOC) ... ${DOC}${DOC_MESSAGE}")
-message(STATUS "")
+add_library(fakeInputStatic STATIC ${SRCS})
+target_link_libraries(fakeInputStatic ${LIBS})
+set_target_properties(fakeInputStatic
+        PROPERTIES
+        OUTPUT_NAME fakeInput
+        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/lib
+        )
+
+add_library(fakeInputShared SHARED ${SRCS})
+target_link_libraries(fakeInputShared ${LIBS})
+set_target_properties(fakeInputShared
+        PROPERTIES
+        OUTPUT_NAME fakeInput
+        VERSION ${VERSION}.${SUBVERSION}.0
+        SOVERSION ${VERSION}
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/lib # needed on Unix
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/lib # needed on Windows
+        )
+
+install(TARGETS fakeInputStatic fakeInputShared
+        ARCHIVE DESTINATION ${INSTALL_PREFIX}/${INSTALL_LIBRARY_DIR}
+        LIBRARY DESTINATION ${INSTALL_PREFIX}/${INSTALL_LIBRARY_DIR}
+        RUNTIME DESTINATION ${INSTALL_PREFIX}/${INSTALL_LIBRARY_DIR}
+        )
+
+install(FILES fakeinput.hpp
+        DESTINATION ${INSTALL_PREFIX}/${INSTALL_HEADER_DIR}
+        )
+
+install(FILES ${HDRS}
+        DESTINATION ${INSTALL_PREFIX}/${INSTALL_HEADER_DIR}/fakeinput
+        )
+
+
+
+
+target_include_directories(fakeInputStatic PUBLIC include)
+target_include_directories(fakeInputShared PUBLIC include)

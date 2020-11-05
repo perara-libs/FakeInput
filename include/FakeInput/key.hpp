@@ -25,11 +25,11 @@
 #ifndef FI_KEY_HPP
 #define FI_KEY_HPP
 
-#include "config.hpp"
 
-#ifdef UNIX
+
+#ifdef __unix__
     #include "key_unix.hpp"
-#elif WIN32
+#elif _WIN32
     #include "key_win.hpp"
 #endif
 
@@ -42,7 +42,7 @@ namespace FakeInput
      * On Unix-like platform derived from Key_unix
      */
     typedef Key_unix Key;
-#elif WIN32
+#elif _WIN32
     /**
      * @image html windows.png
      * On Windows derived from Key_win
