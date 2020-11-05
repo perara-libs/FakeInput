@@ -159,7 +159,7 @@ macro(install_to_win_path PATH)
 
         if(\"\${PATH_MATCH}\" STREQUAL \"\")
             execute_process(
-                COMMAND @CMAKE_COMMAND@ -E write_regv
+                COMMAND ${CMAKE_COMMAND} -E write_regv
                     \"HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment;Path\"
                     \"\${ENV_PATH};${PATH}\"
             )            
