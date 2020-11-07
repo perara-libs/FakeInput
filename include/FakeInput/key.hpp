@@ -35,7 +35,7 @@
 
 namespace FakeInput
 {
-#ifdef UNIX
+#ifdef __unix__
     /** Class representing a real key.
      *
      * @image html tux.png
